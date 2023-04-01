@@ -1,0 +1,56 @@
+document.getElementById('findHappinessBtn').addEventListener('click', findHappinessTechnique);
+
+function findHappinessTechnique() {
+    const result = document.getElementById('result');
+    result.innerHTML = 'Searching for a happiness technique...';
+
+    const queries = [
+        "Happiness+techniques",
+        "happiness+exercises",
+        "happiness+activities",
+      "do+this+right+now+to+be+happy",
+        "things+you+can+do+right+now+with+your+mind+to+make+you+happy",
+        "happiness+right+now",
+        "make+me+smile+right+now",
+        "spiritual+exercises",
+        "therapy+techniques",
+        "happiness+journaling+techniques"
+    ];
+
+    const randomQuery = queries[Math.floor(Math.random() * queries.length)];
+
+    // Replace YOUR_BING_API_KEY with your Bing API key
+    const apiKey = '38932ff32cbd431e8d04f72729a5b06b';
+    const searchUrl = `https://api.bing.microsoft.com/v7.0/search?q=${randomQuery}&count=50&responseFilter=WebPages&$format=json`;
+
+    fetch(searchUrl, {
+        headers: {
+            'Ocp-Apim-Subscription-Key': apiKey
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.webPages && data.webPages.value && data.webPages.value.length > 0) {
+            const randomIndex = Math.floor(Math.random() * data.webPages.value.length);
+            const randomWebPage = data.webPages.value[randomIndex];
+            result.innerHTML = `<h2>Do This Right Now</h2><a href="${randomWebPage.url}" target="_blank">${randomWebPage.name}</a>`;
+            fetch(randomWebPage.url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const mainText = doc.querySelector('main') || doc.querySelector('article') || doc.querySelector('body');
+                result.appendChild(mainText);
+            })
+            .catch(error => {
+                console.error('Error fetching main text:', error);
+            });
+        } else {
+            result.innerHTML = 'No happiness techniques found. Try again!';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        result.innerHTML = 'An error occurred. Try again!';
+    });
+}
